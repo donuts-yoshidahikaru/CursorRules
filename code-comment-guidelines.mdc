@@ -1,0 +1,112 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# **1. 基本原則**
+
+1. **WHY を書く、WHAT/HOW は書かない**。良いコードは自己説明的であり、コメントは意図や制約、背景のみを補足することに徹する。
+2. **可読性 > 執筆コスト**。読者（将来の他者／自分）が最短で理解できるよう最小限で十分な情報だけを残す。
+
+# **2. コメントを書くべきタイミング**
+
+| **レイヤ** | **書く内容** | **必須/任意** |
+| --- | --- | --- |
+| 公開 API (public/protected) | 仕様・使用例・制約 | **必須** |
+| 複雑なアルゴリズム | 背景理論・計算量・出典 | **必須** |
+| ハック / ワークアラウンド | なぜ必要か・取り除く条件 | **必須** |
+| 簡潔な私有コード | 自明なら不要 | 任意 |
+
+# **3. コメントの種類とフォーマット**
+
+## **3.1 クラス／構造体コメント**
+
+- 1 行要約 → 空行 → 詳細 → @author 等
+- Java 系は /** … */、C# は ///, Kotlin は /** … */ を使用。
+
+## **3.2 関数／メソッドコメント**
+
+- Python
+
+```
+def fetch(url: str) -> bytes:
+    """URL をフェッチし gzip 展開後のバイト列を返す。
+
+    Args:
+        url: 取得対象 URL。
+
+    Returns:
+        展開済みのバイト列。
+
+    Raises:
+        TimeoutError: 10 秒以内に応答が無い場合。
+    """
+```
+
+- 
+    - 先頭行は命令形、末尾にピリオド。
+- Java
+
+```
+/**
+ * Returns canonical name.
+ *
+ * @param file Source file
+ * @return canonical path
+ * @throws IOException if resolution fails
+ */
+```
+
+- 
+    - @param → @return → @throws → @deprecated の順。
+
+## **3.4 インライン／行末コメント**
+
+- 行末コメントは 2 スペース空けて // comment。
+- 横幅 100 列を超えない。
+
+## **3.5 TODO／FIXME／NOTE**
+
+- フォーマット: // TODO(MV-1234, 2025-05-30): ユーザークレーム対応
+    - チケットまたは期限必須、なければレビュー拒否。
+- CI で grep -R --line-number -e "TODO(" を実行し、期限切れ/未チケットを fail にする。
+- IDE の TODO ビューに正しく表示される書式 (// TODO: + インデント) を守る。
+
+# **4. 言語別必須タグ & サンプル**
+
+| **言語** | **ツール** | **要約タグ** | **引数タグ** | **例外タグ** | **その他必須** |
+| --- | --- | --- | --- | --- | --- |
+| Python | Sphinx / pydoc | 1 行目 | Args: | Raises: | Returns: 段落 |
+| Java | Javadoc | 先頭文 | @param | @throws | @return, <p> 区切り |
+| C# | XML Doc | <summary> | <param> | <exception> | <remarks> |
+| Kotlin | KDoc | 1 段落 | @param | @throws | Markdown リンク可 |
+| Rust | rustdoc | 1 行要約 | # Examples セクション | # Errors | # Safety for unsafe |
+
+例: Rust
+
+```
+/// Reads config file into `Config`.
+///
+/// # Errors
+/// Returns `io::Error` if the file cannot be read.
+///
+/// # Examples
+/// ```
+/// let cfg = config::read("app.toml")?;
+/// ```
+```
+
+rustdoc は crate 全体のトップに必ず概要を書く。
+
+# **5. コメント書式規則（共通）**
+
+1. **改行コード**: LF 固定。
+2. **文字コード**: UTF-8、絵文字禁止。
+3. **言語**: 英語で統一。日本語が必要な場合は英語 → 空行 → 日本語の順で併記。
+4. **Markdown**: Javadoc/KDoc/rustdoc では Markdown 記法を使用し、コードは `code` または code ブロック。
+
+# **6. 禁則事項**
+
+- 冗長・重複・挙動そのものの説明（コードを読めば分かる）。
+- 誤解を招く・期限切れのコメント。
+- コメントアウトされた旧コード。履歴は Git で管理。
